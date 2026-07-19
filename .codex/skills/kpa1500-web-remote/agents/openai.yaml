@@ -1,0 +1,4 @@
+interface:
+  display_name: "KPA1500 Web Remote"
+  short_description: "Build and maintain the KPA1500 Pi remote"
+  default_prompt: "Use $kpa1500-web-remote to continue development of the Elecraft KPA1500 Raspberry Pi host and HTTPS remote client."
