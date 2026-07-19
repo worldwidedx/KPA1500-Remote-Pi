@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+systemctl daemon-reload || true
+if [ "$1" = purge ]; then
+  rm -rf /var/lib/kpa1500-web
+  deluser --system kpa1500-web 2>/dev/null || true
+fi
+exit 0

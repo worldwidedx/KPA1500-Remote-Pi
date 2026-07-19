@@ -1,0 +1,13 @@
+{
+  "name": "kpa1500-web-remote",
+  "version": "0.4.1",
+  "private": true,
+  "description": "Raspberry Pi web remote for the Elecraft KPA1500",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
+    "package": "bash packaging/build-deb.sh"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+if ! getent passwd kpa1500-web >/dev/null; then
+  adduser --system --group --home /var/lib/kpa1500-web --no-create-home kpa1500-web
+fi
+systemctl daemon-reload
+systemctl enable --now kpa1500-web.service
+exit 0

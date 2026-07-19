@@ -1,0 +1,12 @@
+{
+  "web": { "host": "0.0.0.0", "port": 4526, "sessionHours": 12 },
+  "amplifier": {
+    "mode": "demo",
+    "host": "192.168.1.150",
+    "port": 1500,
+    "serialDevice": "/dev/ttyUSB0",
+    "serialBaud": 38400,
+    "macAddress": ""
+  },
+  "polling": { "fastMs": 500, "slowMs": 5000 }
+}

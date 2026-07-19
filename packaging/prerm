@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+if [ "$1" = remove ]; then
+  systemctl disable --now kpa1500-web.service || true
+fi
+exit 0

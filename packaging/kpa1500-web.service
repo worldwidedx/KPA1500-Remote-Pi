@@ -1,0 +1,24 @@
+[Unit]
+Description=Elecraft KPA1500 Web Remote Host
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kpa1500-web
+Group=kpa1500-web
+SupplementaryGroups=dialout
+WorkingDirectory=/opt/kpa1500-web
+Environment=KPA1500_DATA_DIR=/var/lib/kpa1500-web
+ExecStart=/usr/bin/node /opt/kpa1500-web/src/server.js
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+StateDirectory=kpa1500-web
+StateDirectoryMode=0700
+
+[Install]
+WantedBy=multi-user.target

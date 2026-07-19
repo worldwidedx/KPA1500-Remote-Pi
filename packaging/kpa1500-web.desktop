@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=KPA1500 Host Setup
+Comment=Configure the local KPA1500 remote host
+Exec=/usr/bin/kpa1500-web
+Icon=kpa1500-web
+Terminal=false
+Categories=Utility;HamRadio;
+StartupNotify=true
+StartupWMClass=KPA1500HostSetup

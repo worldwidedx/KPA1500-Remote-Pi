@@ -1,0 +1,20 @@
+# Runtime configuration, credentials, and private certificates
+/data/
+
+# Built packages and archives
+/dist/
+*.deb
+*.zip
+
+# Downloaded and extracted vendor documentation
+/docs/source/
+/docs/KPA1500-Owners-Manual-Rev-B1.txt
+/docs/KPA1500ProgrammingReferenceV3.txt
+
+# Dependencies, logs, and editor files
+/node_modules/
+*.log
+*.tmp
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,26 @@
+KPA1500 Remote Software 1.34 connection notes (Elecraft, July 2024)
+
+Local Connect
+- One application instance connects directly by Host PC USB serial or amplifier Ethernet.
+- USB is local to the attached computer.
+- Ethernet uses the amplifier IP and is reachable on its LAN.
+- Elecraft's legacy note says direct WAN access requires TCP and UDP port 1500 forwarding, but explicitly does not recommend it for security reasons.
+
+Host Remote
+- The host connects to the amplifier by USB or Ethernet.
+- Server setup includes a TCP listening port, username, password, and maximum connection time.
+- The legacy default host TCP port is 4526; outside-LAN access requires forwarding that port.
+- Maximum time 0 means unlimited.
+- Multiple remote computers may connect.
+
+Connect Remote
+- The client uses the WAN address of the host location, or the host computer's LAN address when local.
+
+Power
+- Ethernet power-on requires Wake on LAN enabled in the amplifier MENU (Net Wake on LAN).
+
+Web replacement interpretation
+- The Raspberry Pi service takes the Host Remote role. Browser sessions take the Connect Remote role.
+- Preserve configurable host port and user credentials, but prefer HTTPS reverse proxy or VPN over raw internet port forwarding.
+
+Source: Elecraft `KPA1500 Remote Software.rtf`, distributed alongside KPA1500 Remote v1.34.

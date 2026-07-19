@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KPA1500 Web Remote</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/settings.css">
+</head>
+<body>
+  <section id="auth" class="auth-shell">
+    <form id="auth-form" class="panel auth-card">
+      <div class="wordmark"><span>ELECRAFT KPA</span>1500 <em>by worldwidedx.com</em></div><h1 id="auth-title">Remote sign in</h1>
+      <p id="auth-copy">Control and monitor your amplifier securely.</p>
+      <label>Username<input id="username" autocomplete="username" required minlength="3"></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="10"></label>
+      <button class="primary" type="submit">Continue</button><p id="auth-error" class="error"></p>
+    </form>
+  </section>
+  <main id="app" hidden>
+    <header>
+      <div class="wordmark"><span>ELECRAFT KPA</span>1500 <em>by worldwidedx.com</em></div>
+      <div class="header-actions"><span id="connection" class="pill">Connecting</span><button id="compact" class="ghost">Compact</button><button id="logout" class="ghost">Sign out</button></div>
+    </header>
+    <section class="status-strip">
+      <div><small>AMPLIFIER</small><strong id="power">—</strong></div><div><small>MODE</small><strong id="mode">—</strong></div>
+      <div><small>BAND</small><strong id="band">—</strong></div><div><small>FREQUENCY</small><strong id="frequency">—</strong></div>
+      <div><small>ANTENNA</small><strong id="antenna">—</strong></div><div><small>FAULT</small><strong id="fault">—</strong></div>
+    </section>
+    <section class="dashboard">
+      <article class="panel meters">
+        <div class="section-title"><h2>RF output</h2><span id="updated">Waiting for telemetry</span></div>
+        <div class="power-readout"><strong id="watts">0</strong><span>W</span></div>
+        <div class="meter"><i id="power-bar"></i></div>
+        <div class="metric-grid">
+          <div><small>FORWARD</small><strong id="forward">0 W</strong></div><div><small>REFLECTED</small><strong id="reflected">0 W</strong></div>
+          <div><small>INPUT</small><strong id="input">0 W</strong></div><div><small>SWR</small><strong id="swr">1.00</strong></div>
+        </div>
+      </article>
+      <article class="panel controls">
+        <div class="section-title"><h2>Controls</h2><span>Remote panel</span></div>
+        <div class="button-grid"><button id="operate-button" data-action="operate" class="mode-button">OPER</button><button id="standby-button" data-action="standby" class="mode-button">STBY</button><button data-action="tune">TUNE</button><button data-action="cancelTune">CANCEL</button></div>
+        <label class="select-label">Antenna<select id="antenna-select"></select></label>
+        <div class="button-grid"><button id="wake">Wake amplifier</button><button data-action="powerOff" class="danger">Power off</button></div>
+      </article>
+      <article class="panel health">
+        <div class="section-title"><h2>Amplifier health</h2><span id="firmware">Firmware —</span></div>
+        <div class="health-grid">
+          <div><small>TEMPERATURE</small><strong id="temperature">—</strong></div><div><small>FAN</small><strong id="fan">—</strong></div>
+          <div><small>PA VOLTAGE</small><strong id="voltage">—</strong></div><div><small>PA CURRENT</small><strong id="current">—</strong></div>
+        </div>
+      </article>
+      <article class="panel activity"><div class="section-title"><h2>Activity</h2><button id="refresh-log" class="ghost">Refresh</button></div><ol id="events"></ol></article>
+    </section>
+  </main>
+  <div id="toast" role="status"></div><script src="/app.js"></script>
+</body>
+</html>

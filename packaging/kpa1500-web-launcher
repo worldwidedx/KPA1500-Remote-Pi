@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eu
+for attempt in $(seq 1 30); do
+  if /usr/bin/curl --silent --fail http://127.0.0.1:4525/host-api/status >/dev/null; then
+    exec /usr/bin/chromium --user-data-dir="${XDG_CONFIG_HOME:-$HOME/.config}/kpa1500-host-chromium" --app=http://127.0.0.1:4525 --start-maximized --class=KPA1500HostSetup
+  fi
+  sleep 0.25
+done
+notify-send 'KPA1500 Web Remote' 'The host service is unavailable. Run: sudo systemctl status kpa1500-web' 2>/dev/null || true
+exit 1
