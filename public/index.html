@@ -37,13 +37,15 @@
       <article class="panel controls">
         <div class="section-title"><h2>Controls</h2><span>Remote panel</span></div>
         <div class="button-grid"><button id="operate-button" data-action="operate" class="mode-button">OPER</button><button id="standby-button" data-action="standby" class="mode-button">STBY</button><button data-action="tune">TUNE</button><button data-action="cancelTune">CANCEL</button></div>
+        <label class="control-label">ATU path</label><div class="button-grid"><button id="atu-inline-button" data-action="atuInline" class="mode-button">ATU IN</button><button id="atu-bypass-button" data-action="atuBypass" class="mode-button">BYPASS</button></div>
         <label class="select-label">Antenna<select id="antenna-select"></select></label>
+        <label class="select-label fan-slider-label"><span>Minimum fan speed</span><output id="fan-slider-value" for="fan-minimum-slider">0 — Automatic / off</output><input id="fan-minimum-slider" type="range" min="0" max="5" step="1" value="0"><span class="slider-scale"><b>0</b><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b></span></label>
         <div class="button-grid"><button id="wake">Wake amplifier</button><button data-action="powerOff" class="danger">Power off</button></div>
       </article>
       <article class="panel health">
         <div class="section-title"><h2>Amplifier health</h2><span id="firmware">Firmware —</span></div>
         <div class="health-grid">
-          <div><small>TEMPERATURE</small><strong id="temperature">—</strong></div><div><small>FAN</small><strong id="fan">—</strong></div>
+          <div><small>TEMPERATURE</small><strong id="temperature">—</strong></div><div><small>FAN SPEED</small><strong id="fan">—</strong><span id="fan-minimum">Minimum —</span></div>
           <div><small>PA VOLTAGE</small><strong id="voltage">—</strong></div><div><small>PA CURRENT</small><strong id="current">—</strong></div>
         </div>
       </article>

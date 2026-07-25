@@ -6,8 +6,8 @@ Use the repository skill at `.codex/skills/kpa1500-web-remote/SKILL.md`. Read `A
 
 ## Current release
 
-- Source version: `0.4.1` in `package.json`.
-- Raspberry Pi package: `kpa1500-web_0.4.1_arm64.deb` (generated locally; intentionally ignored by Git).
+- Source version: `0.5.0` in `package.json`.
+- Raspberry Pi package: `kpa1500-web_0.5.0_arm64.deb` (generated locally; intentionally ignored by Git).
 - License: MIT.
 - Canonical repository: `https://github.com/worldwidedx/KPA1500-Remote-Pi`.
 - Runtime: Node.js 20+ with standard-library server code; OpenSSL and `qrencode` are packaging dependencies.
@@ -29,11 +29,13 @@ Use the repository skill at `.codex/skills/kpa1500-web-remote/SKILL.md`. Read `A
 - A real KPA1500 running firmware 03.06 has been identified and controlled over its configured private TCP port.
 - The Pi maintains the KPA1500's single accepted TCP command-client connection.
 - OPER/STBY state follows amplifier responses.
+- ATU inline/bypass state and controls use `^AI`; the parser tolerates Elecraft's documented `^AT0;` bypass response inconsistency.
+- Fan display and minimum-speed control use documented levels 0 through 5 (`^FS` and `^FC`) rather than incorrectly labeling the value as RPM.
 - MAC capture and LAN Wake-on-LAN work; amplifier Wake-on-LAN was reported enabled during testing.
 - Local Host Setup and separate HTTPS remote access work.
 - Remote username/password, configurable HTTPS port, arbitrary DynDNS hostname, and private-CA trust workflow work.
 - Debian install/upgrade preserves `/var/lib/kpa1500-web`.
-- Six automated tests passed at the 0.4.1 release.
+- Eight automated tests passed at the 0.5.0 release.
 
 Exact station addresses, username, MAC, certificates, and password data are deliberately omitted. Discover them only from authorized local runtime configuration when hardware testing is requested.
 

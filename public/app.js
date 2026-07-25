@@ -17,13 +17,16 @@ function render(s) {
   value('power', s.power); value('mode', s.mode); value('band', s.band ? `${s.band} m` : '—'); value('frequency', s.frequencyHz ? `${(s.frequencyHz / 1e6).toFixed(5)} MHz` : '—');
   $('operate-button').classList.toggle('active-oper', s.mode === 'OPER');
   $('standby-button').classList.toggle('active-standby', s.mode === 'STBY');
+  $('atu-inline-button').classList.toggle('active-oper', s.atuInline === true);
+  $('atu-bypass-button').classList.toggle('active-standby', s.atuInline === false);
   value('antenna', s.antenna ? `ANT ${s.antenna}` : '—'); value('fault', !s.faultCode || s.faultCode === '000' ? 'NONE' : s.faultCode);
   value('watts', Math.round(s.forwardWatts || 0)); value('forward', `${s.forwardWatts || 0} W`); value('reflected', `${s.reflectedWatts || 0} W`); value('input', `${s.inputWatts || 0} W`); value('swr', Number(s.swr || 1).toFixed(2));
-  value('temperature', `${s.temperatureC ?? '—'} °C`); value('fan', `${s.fanRpm ?? '—'} RPM`); value('voltage', `${s.voltageV ?? '—'} V`); value('current', `${s.currentA ?? '—'} A`); value('firmware', `Firmware ${s.firmware || '—'}`);
+  value('temperature', `${s.temperatureC ?? '—'} °C`); value('fan', `${s.fanSpeed ?? '—'} / 5`); value('fan-minimum', `Minimum ${s.fanMinimum ?? '—'}`); value('voltage', `${s.voltageV ?? '—'} V`); value('current', `${s.currentA ?? '—'} A`); value('firmware', `Firmware ${s.firmware || '—'}`);
   $('power-bar').style.width = `${Math.min(100, (s.forwardWatts || 0) / 15)}%`;
   $('connection').textContent = s.connected ? `${s.connectionMode.toUpperCase()} ONLINE` : 'OFFLINE'; $('connection').classList.toggle('online', s.connected);
   value('updated', s.lastSeen ? `Updated ${new Date(s.lastSeen).toLocaleTimeString()}` : 'Waiting for telemetry');
   if (s.antenna) $('antenna-select').value = s.antenna;
+  if (Number.isInteger(s.fanMinimum) && document.activeElement !== $('fan-minimum-slider')) { $('fan-minimum-slider').value = s.fanMinimum; updateFanSliderLabel(s.fanMinimum); }
 }
 async function refreshState() { try { render(await request('/api/state')); } catch (e) { if (/Authentication/.test(e.message)) location.reload(); } }
 async function refreshEvents() {
@@ -50,6 +53,9 @@ $('auth-form').addEventListener('submit', async event => {
 document.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', async () => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: button.dataset.action }) }); toast(`${button.textContent} command sent`); } catch (e) { toast(e.message); } }));
 for (let i = 1; i <= 32; i++) { const option = document.createElement('option'); option.value = i; option.textContent = `ANT ${i}`; $('antenna-select').append(option); }
 $('antenna-select').addEventListener('change', async event => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: 'antenna', value: Number(event.target.value) }) }); } catch (e) { toast(e.message); } });
+function updateFanSliderLabel(value) { const labels = ['0 — Automatic / off', '1 — Minimum', '2', '3', '4', '5 — Maximum']; $('fan-slider-value').textContent = labels[Number(value)] || value; }
+$('fan-minimum-slider').addEventListener('input', event => updateFanSliderLabel(event.target.value));
+$('fan-minimum-slider').addEventListener('change', async event => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: 'fanMinimum', value: Number(event.target.value) }) }); toast(`Minimum fan speed set to ${event.target.value}`); } catch (e) { toast(e.message); } });
 $('wake').addEventListener('click', async () => { try { await request('/api/wake', { method: 'POST' }); toast('Wake packet sent'); } catch (e) { toast(e.message); } });
 $('logout').addEventListener('click', async () => { await request('/api/logout', { method: 'POST' }); location.reload(); });
 $('compact').addEventListener('click', () => { $('app').classList.toggle('compact'); $('compact').textContent = $('app').classList.contains('compact') ? 'Full view' : 'Compact'; });

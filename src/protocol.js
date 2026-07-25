@@ -55,7 +55,10 @@ function applyFrame(state, frame) {
     case 'PWI': next.inputWatts = numberValue(value); break;
     case 'SW': next.swr = numberValue(value, 10); break;
     case 'TM': next.temperatureC = numberValue(value); break;
-    case 'FS': next.fanRpm = numberValue(value); break;
+    case 'FS': next.fanSpeed = numberValue(value); break;
+    case 'FC': next.fanMinimum = numberValue(value); break;
+    case 'AI': next.atuInline = value === '1'; break;
+    case 'AT': if (value === '0') next.atuInline = false; break;
     case 'PC': next.currentA = numberValue(value); break;
     case 'VMH': next.voltageV = numberValue(value, 10); break;
     case 'FL': next.faultCode = value; break;

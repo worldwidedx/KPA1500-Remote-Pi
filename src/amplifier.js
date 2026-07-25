@@ -9,7 +9,7 @@ const { normalizeCommand, splitFrames, applyFrame } = require('./protocol');
 const initialState = () => ({
   connected: false, power: 'ON', mode: 'STBY', antenna: 1, band: 20,
   frequencyHz: 14200000, forwardWatts: 0, reflectedWatts: 0, inputWatts: 0,
-  swr: 1, temperatureC: 28, fanRpm: 0, voltageV: 50, currentA: 0,
+  swr: 1, temperatureC: 28, fanSpeed: 0, fanMinimum: 0, atuInline: false, voltageV: 50, currentA: 0,
   faultCode: '000', firmware: '', serialNumber: '', lastSeen: null
 });
 
@@ -62,7 +62,7 @@ class Amplifier extends EventEmitter {
         forwardWatts: watts, reflectedWatts: Math.round(watts * 0.018), inputWatts: watts ? Math.round(watts / 14) : 0,
         swr: watts ? 1.15 + Math.sin(phase / 2) * .05 : 1,
         temperatureC: transmitting ? 42 + Math.round(Math.sin(phase / 3) * 3) : 29,
-        fanRpm: transmitting ? 1650 + Math.round(Math.sin(phase) * 120) : 0,
+        fanSpeed: transmitting ? 3 : this.state.fanMinimum,
         currentA: watts ? Math.round(watts / 50 * 10) / 10 : 0,
         lastSeen: new Date().toISOString()
       });
@@ -143,13 +143,15 @@ class Amplifier extends EventEmitter {
     if (command.startsWith('^OS')) this.setState({ mode: command.includes('1') ? 'OPER' : 'STBY' });
     else if (command.startsWith('^ON')) this.setState({ power: command.includes('1') ? 'ON' : 'OFF' });
     else if (command.startsWith('^AN')) this.setState({ antenna: Number(command.slice(3, -1)) || this.state.antenna });
+    else if (command.startsWith('^AI')) this.setState({ atuInline: command.includes('1') });
+    else if (command.startsWith('^FC')) this.setState({ fanMinimum: Number(command.slice(3, -1)), fanSpeed: Math.max(this.state.fanSpeed || 0, Number(command.slice(3, -1))) });
     else if (command === '^FT;') this.setState({ mode: 'OPER', swr: 1.08 });
     this.emit('command', command);
     return command;
   }
 
   queryFast() { for (const command of ['^WS;', '^PWR;', '^PWI;', '^TM;', '^VI;', '^FS;', '^FL;', '^OS;']) this.safeSend(command); }
-  querySlow() { for (const command of ['^ON;', '^AN;', '^BN;', '^FR;', '^RV;', '^SN;', '^MA;', '^WL;']) this.safeSend(command); }
+  querySlow() { for (const command of ['^ON;', '^AN;', '^BN;', '^FR;', '^RV;', '^SN;', '^MA;', '^WL;', '^AI;', '^FC;']) this.safeSend(command); }
   safeSend(command) { try { this.send(command); } catch {} }
 }
 

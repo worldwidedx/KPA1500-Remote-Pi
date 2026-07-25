@@ -24,6 +24,8 @@ Use Elecraft's current programming reference for complete formats, valid ranges,
 | `^PC;` | Read PA current. |
 | `^VMH;` | Read nominal 50-volt supply monitor. |
 | `^FS;` | Read fan speed. |
+| `^FC;`, `^FC0;`…`^FC5;` | Read or set minimum fan speed from automatic/off (0) through maximum (5). Actual `^FS` may be higher due to temperature. |
+| `^AI;`, `^AI0;`, `^AI1;` | Read or set the ATU bypass relays: `0` bypass and `1` inline. Accept documented `^AT0;` bypass response inconsistency. |
 | `^FL;` | Read fault code. |
 | `^FT;` | Start ATU tune. |
 | `^FE;` | Cancel full-search tune. |

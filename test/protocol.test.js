@@ -21,3 +21,12 @@ test('captures MAC address and Wake-on-LAN state', () => {
   state = applyFrame(state, '^WL1;');
   assert.equal(state.macAddress, '54:10:EC:14:75:22'); assert.equal(state.wakeOnLanEnabled, true);
 });
+test('maps ATU inline and bypass responses including documented AT0 variant', () => {
+  let state = applyFrame({}, '^AI1;'); assert.equal(state.atuInline, true);
+  state = applyFrame(state, '^AI0;'); assert.equal(state.atuInline, false);
+  state = applyFrame({ atuInline: true }, '^AT0;'); assert.equal(state.atuInline, false);
+});
+test('maps current and minimum fan speed levels', () => {
+  let state = applyFrame({}, '^FS4;'); state = applyFrame(state, '^FC2;');
+  assert.equal(state.fanSpeed, 4); assert.equal(state.fanMinimum, 2);
+});
