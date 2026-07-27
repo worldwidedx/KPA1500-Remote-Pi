@@ -1,6 +1,19 @@
 'use strict';
 
 const SAFE_COMMAND = /^\^[A-Z][A-Z0-9]{0,2}[^;\r\n]{0,128};$/;
+const BAND_LABELS = {
+  0: '160 m',
+  1: '80 m',
+  2: '60 m',
+  3: '40 m',
+  4: '30 m',
+  5: '20 m',
+  6: '17 m',
+  7: '15 m',
+  8: '12 m',
+  9: '10 m',
+  10: '6 m'
+};
 
 function normalizeCommand(command) {
   const value = String(command || '').trim().toUpperCase();
@@ -9,6 +22,7 @@ function normalizeCommand(command) {
 }
 
 function commandKey(frame) {
+  if (/^\^AM[IB]/.test(frame)) return 'AM';
   const match = /^\^(VM[235]|[A-Z]{1,3})/.exec(frame);
   return match ? match[1] : '';
 }
@@ -48,8 +62,17 @@ function applyFrame(state, frame) {
     case 'OS': next.mode = value === '1' ? 'OPER' : 'STBY'; break;
     case 'ON': next.power = value === '1' ? 'ON' : 'OFF'; break;
     case 'AN': next.antenna = numberValue(value); break;
-    case 'BN': next.band = numberValue(value); break;
-    case 'FR': next.frequencyHz = numberValue(value); break;
+    case 'BN': {
+      const band = numberValue(value);
+      next.band = band;
+      if (Number.isFinite(band)) next.bandLabel = BAND_LABELS[band] || `${band} m`;
+      break;
+    }
+    case 'FR': {
+      const frequencyKhz = numberValue(value);
+      if (frequencyKhz !== null) next.frequencyHz = frequencyKhz * 1000;
+      break;
+    }
     case 'PWF': next.forwardWatts = numberValue(value); break;
     case 'PWR': next.reflectedWatts = numberValue(value); break;
     case 'PWI': next.inputWatts = numberValue(value); break;
@@ -57,8 +80,12 @@ function applyFrame(state, frame) {
     case 'TM': next.temperatureC = numberValue(value); break;
     case 'FS': next.fanSpeed = numberValue(value); break;
     case 'FC': next.fanMinimum = numberValue(value); break;
-    case 'AI': next.atuInline = value === '1'; break;
-    case 'AT': if (value === '0') next.atuInline = false; break;
+    case 'AI':
+    case 'AT':
+    case 'AM':
+      if (value === '0' || value === 'B') next.atuInline = false;
+      else if (value === '1' || value === '2' || value === 'I') next.atuInline = true;
+      break;
     case 'PC': next.currentA = numberValue(value); break;
     case 'VMH': next.voltageV = numberValue(value, 10); break;
     case 'FL': next.faultCode = value; break;
@@ -82,4 +109,9 @@ function applyFrame(state, frame) {
   return next;
 }
 
-module.exports = { normalizeCommand, commandKey, splitFrames, applyFrame };
+function bandLabelFromNumber(value) {
+  if (!Number.isFinite(value)) return null;
+  return BAND_LABELS[value] || `${value} m`;
+}
+
+module.exports = { normalizeCommand, commandKey, splitFrames, applyFrame, bandLabelFromNumber };

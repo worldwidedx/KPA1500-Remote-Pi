@@ -12,8 +12,8 @@ Use Elecraft's current programming reference for complete formats, valid ranges,
 | `^ON;`, `^ON0;`, `^ON1;` | Read, turn off, or turn on main power supplies. Ethernet power-on normally uses Wake-on-LAN. |
 | `^OS;`, `^OS0;`, `^OS1;` | Read or set STBY/OPER. `0` is STBY and `1` is OPER. Drive button highlighting from the response. |
 | `^AN;`, `^ANn;` | Read or select antenna. Firmware 3.x supports extended antenna numbers; validate against the current manual. |
-| `^BN;` | Read band number. Do not label it as meters without applying Elecraft's documented mapping. |
-| `^FR;` | Read frequency. Confirm documented units before formatting in the UI. |
+| `^BN;` | Read band number. Map it through Elecraft's band table before rendering a band label. |
+| `^FR;` | Read frequency in kHz. Convert to Hz for display formatting. |
 | `^WS;` | Read forward power and SWR combined telemetry. |
 | `^PWF;` | Read forward RF output power in watts. |
 | `^PWR;` | Read reflected RF power in watts. |
@@ -25,11 +25,14 @@ Use Elecraft's current programming reference for complete formats, valid ranges,
 | `^VMH;` | Read nominal 50-volt supply monitor. |
 | `^FS;` | Read fan speed. |
 | `^FC;`, `^FC0;`…`^FC5;` | Read or set minimum fan speed from automatic/off (0) through maximum (5). Actual `^FS` may be higher due to temperature. |
-| `^AI;`, `^AI0;`, `^AI1;` | Read or set the ATU bypass relays: `0` bypass and `1` inline. Accept documented `^AT0;` bypass response inconsistency. |
+| `^AM;`, `^AM...` | Read ATU mode for the current band/antenna. Accept `^AI` and `^AT` response variants from mixed firmware behavior. |
+| `^AI;`, `^AI0;`, `^AI1;` | Read or set the ATU bypass relays: `0` bypass and `1` inline. |
+| `^AMI;`, `^AMB;` | Front-panel ATU inline and bypass button-press macros used by this project for remote control. |
+| `^BPH18;`, `^BPH01;` | Simulate the PF1 and PF2 front-panel button holds. |
 | `^FL;` | Read fault code. |
 | `^FT;` | Start ATU tune. |
 | `^FE;` | Cancel full-search tune. |
 
-The server polls `^WS`, `^PWR`, `^PWI`, `^TM`, `^VI`, `^FS`, `^FL`, and `^OS` quickly. It polls power, antenna, band, frequency, identity, MAC, and Wake-on-LAN more slowly.
+The server polls `^WS`, `^PWR`, `^PWI`, `^TM`, `^VI`, `^FS`, `^FL`, and `^OS` quickly. It polls power, antenna, band, frequency, ATU mode, identity, MAC, and Wake-on-LAN more slowly.
 
 Official source: https://elecraft.com/pages/kpa1500-1500-watt-linear-amplifier-manuals

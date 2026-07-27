@@ -7,6 +7,9 @@
 .mode-button.active-standby { background: var(--amber); border-color: var(--amber); color: #211300; box-shadow: 0 0 18px #ffb84d33; }
 .control-label { margin-top: 1.1rem; }
 .health-grid span { display: block; margin-top: .25rem; color: var(--muted); font-size: .72rem; }
+.health-grid strong.fan-warn { color: #ffd24a; }
+.health-grid strong.fan-hot { color: #ffb166; }
+.health-grid strong.fan-critical { color: #ff6262; }
 .fan-slider-label { display: grid; grid-template-columns: 1fr auto; gap: .5rem; margin: 1rem 0; }
 .fan-slider-label output { color: var(--text); font-variant-numeric: tabular-nums; }
 .fan-slider-label input[type="range"] { grid-column: 1 / -1; padding: 0; accent-color: var(--green); cursor: pointer; }

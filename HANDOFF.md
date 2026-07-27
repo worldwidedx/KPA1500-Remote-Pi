@@ -6,8 +6,8 @@ Use the repository skill at `.codex/skills/kpa1500-web-remote/SKILL.md`. Read `A
 
 ## Current release
 
-- Source version: `0.5.0` in `package.json`.
-- Raspberry Pi package: `kpa1500-web_0.5.0_arm64.deb` (generated locally; intentionally ignored by Git).
+- Source version: `0.6.0` in `package.json`.
+- Raspberry Pi package: `kpa1500-web_0.6.0_arm64.deb` (generated locally; intentionally ignored by Git).
 - License: MIT.
 - Canonical repository: `https://github.com/worldwidedx/KPA1500-Remote-Pi`.
 - Runtime: Node.js 20+ with standard-library server code; OpenSSL and `qrencode` are packaging dependencies.
@@ -29,13 +29,15 @@ Use the repository skill at `.codex/skills/kpa1500-web-remote/SKILL.md`. Read `A
 - A real KPA1500 running firmware 03.06 has been identified and controlled over its configured private TCP port.
 - The Pi maintains the KPA1500's single accepted TCP command-client connection.
 - OPER/STBY state follows amplifier responses.
-- ATU inline/bypass state and controls use `^AI`; the parser tolerates Elecraft's documented `^AT0;` bypass response inconsistency.
-- Fan display and minimum-speed control use documented levels 0 through 5 (`^FS` and `^FC`) rather than incorrectly labeling the value as RPM.
+- ATU inline/bypass controls use `^AMI;` and `^AMB;` on the control path, while the parser accepts `^AM`, `^AT`, and `^AI` response forms so mixed firmware behavior still renders correctly.
+- Frequency telemetry from `^FR` is reported by the amplifier in kHz; the UI converts it to Hz for display and renders `^BN` using the Elecraft band-number-to-band table instead of treating the band number as meters.
+- PF1 and PF2 are exposed in the remote dashboard and send the documented `^BPH18;` and `^BPH01;` front-panel button-press macros.
+- Fan display and minimum-speed control use documented levels 0 through 5 (`^FS` and `^FC`) rather than incorrectly labeling the value as RPM, and the fan speed readout colors warn at 3, 4, and 5.
 - MAC capture and LAN Wake-on-LAN work; amplifier Wake-on-LAN was reported enabled during testing.
 - Local Host Setup and separate HTTPS remote access work.
 - Remote username/password, configurable HTTPS port, arbitrary DynDNS hostname, and private-CA trust workflow work.
 - Debian install/upgrade preserves `/var/lib/kpa1500-web`.
-- Eight automated tests passed at the 0.5.0 release.
+- Nine automated tests passed at the 0.6.0 release.
 
 Exact station addresses, username, MAC, certificates, and password data are deliberately omitted. Discover them only from authorized local runtime configuration when hardware testing is requested.
 

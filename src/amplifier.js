@@ -143,7 +143,7 @@ class Amplifier extends EventEmitter {
     if (command.startsWith('^OS')) this.setState({ mode: command.includes('1') ? 'OPER' : 'STBY' });
     else if (command.startsWith('^ON')) this.setState({ power: command.includes('1') ? 'ON' : 'OFF' });
     else if (command.startsWith('^AN')) this.setState({ antenna: Number(command.slice(3, -1)) || this.state.antenna });
-    else if (command.startsWith('^AI')) this.setState({ atuInline: command.includes('1') });
+    else if (command.startsWith('^AM') || command.startsWith('^AT') || command.startsWith('^AI')) this.setState({ atuInline: !command.includes('B') && !command.includes('0') });
     else if (command.startsWith('^FC')) this.setState({ fanMinimum: Number(command.slice(3, -1)), fanSpeed: Math.max(this.state.fanSpeed || 0, Number(command.slice(3, -1))) });
     else if (command === '^FT;') this.setState({ mode: 'OPER', swr: 1.08 });
     this.emit('command', command);
@@ -151,7 +151,7 @@ class Amplifier extends EventEmitter {
   }
 
   queryFast() { for (const command of ['^WS;', '^PWR;', '^PWI;', '^TM;', '^VI;', '^FS;', '^FL;', '^OS;']) this.safeSend(command); }
-  querySlow() { for (const command of ['^ON;', '^AN;', '^BN;', '^FR;', '^RV;', '^SN;', '^MA;', '^WL;', '^AI;', '^FC;']) this.safeSend(command); }
+  querySlow() { for (const command of ['^ON;', '^AN;', '^BN;', '^FR;', '^RV;', '^SN;', '^MA;', '^WL;', '^AM;', '^FC;']) this.safeSend(command); }
   safeSend(command) { try { this.send(command); } catch {} }
 }
 

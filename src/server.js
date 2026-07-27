@@ -40,7 +40,7 @@ function requireAuth(req, res, csrf = false) { const value = session(req); if (!
 const clientIp = req => req.socket.remoteAddress || 'unknown';
 function failLogin(req) { const old = attempts.get(clientIp(req)) || { count: 0, until: 0 }; old.count++; old.until = Date.now() + Math.min(300000, old.count * old.count * 1000); attempts.set(clientIp(req), old); }
 function setCookie(res, name, value, maxAge) { res.setHeader('Set-Cookie', `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`); }
-const controls = { operate: '^OS1;', standby: '^OS0;', powerOn: '^ON1;', powerOff: '^ON0;', tune: '^FT;', cancelTune: '^FE;', atuInline: '^AI1;', atuBypass: '^AI0;' };
+const controls = { operate: '^OS1;', standby: '^OS0;', powerOn: '^ON1;', powerOff: '^ON0;', tune: '^FT;', cancelTune: '^FE;', atuInline: '^AMI;', atuBypass: '^AMB;', pf1: '^BPH18;', pf2: '^BPH01;' };
 
 async function remoteApi(req, res, pathname) {
   if (pathname === '/api/login' && req.method === 'POST') {

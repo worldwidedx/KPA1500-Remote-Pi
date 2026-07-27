@@ -45,4 +45,4 @@ After installed-service changes, verify the loopback Host Setup endpoint, the HT
 
 ## Git workflow
 
-The canonical repository is `https://github.com/worldwidedx/KPA1500-Remote-Pi`. Keep `main` releasable. Do not commit `data/`, `dist/`, downloaded manuals, certificates, or generated archives. Update `HANDOFF.md` with material decisions and verified state before handing work to another computer.
+The canonical repository is `https://github.com/worldwidedx/KPA1500-Remote-Pi`. Keep `main` releasable. Do not commit `data/`, `dist/`, downloaded manuals, certificates, or generated archives. Update `RELEASE_NOTES.md` and `HANDOFF.md` with material decisions and verified state before handing work to another computer.
