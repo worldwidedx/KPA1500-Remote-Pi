@@ -13,6 +13,8 @@ Use Elecraft's current programming reference for complete formats, valid ranges,
 | `^OS;`, `^OS0;`, `^OS1;` | Read or set STBY/OPER. `0` is STBY and `1` is OPER. Drive button highlighting from the response. |
 | `^AN;`, `^ANn;` | Read or select antenna. Firmware 3.x supports extended antenna numbers; validate against the current manual. |
 | `^BN;` | Read band number. Map it through Elecraft's band table before rendering a band label. |
+| `^BPTnn;` | Tap a front-panel button, including the band buttons used by the remote band dropdown. |
+| `^BPHnn;` | Hold a front-panel button, including PF1 and PF2. |
 | `^FR;` | Read frequency in kHz. Convert to Hz for display formatting. |
 | `^WS;` | Read forward power and SWR combined telemetry. |
 | `^PWF;` | Read forward RF output power in watts. |
@@ -28,6 +30,7 @@ Use Elecraft's current programming reference for complete formats, valid ranges,
 | `^AM;`, `^AM...` | Read ATU mode for the current band/antenna. Accept `^AI` and `^AT` response variants from mixed firmware behavior. |
 | `^AI;`, `^AI0;`, `^AI1;` | Read or set the ATU bypass relays: `0` bypass and `1` inline. |
 | `^AMI;`, `^AMB;` | Front-panel ATU inline and bypass button-press macros used by this project for remote control. |
+| `^BPT07;`, `^BPT15;`, `^BPT23;`, `^BPT06;`, `^BPT14;`, `^BPT22;`, `^BPT05;`, `^BPT13;`, `^BPT21;`, `^BPT04;`, `^BPT12;` | Tap the 160 through 6 meter band buttons. |
 | `^BPH18;`, `^BPH01;` | Simulate the PF1 and PF2 front-panel button holds. |
 | `^FL;` | Read fault code. |
 | `^FT;` | Start ATU tune. |

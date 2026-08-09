@@ -1,6 +1,6 @@
 {
   "name": "kpa1500-web-remote",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Raspberry Pi web remote for the Elecraft KPA1500",
   "scripts": {

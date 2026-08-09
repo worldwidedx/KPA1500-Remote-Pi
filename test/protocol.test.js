@@ -5,6 +5,7 @@ const { normalizeCommand, splitFrames, applyFrame } = require('../src/protocol')
 
 test('validates bounded KPA commands', () => {
   assert.equal(normalizeCommand(' ^os1; '), '^OS1;');
+  assert.equal(normalizeCommand(' ^bpt22; '), '^BPT22;');
   assert.throws(() => normalizeCommand('^OS1;\n^ON0;'));
   assert.throws(() => normalizeCommand('OS1;'));
 });

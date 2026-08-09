@@ -1,5 +1,14 @@
 # Release Notes
 
+## 0.6.1 - 2026-08-09
+
+This release focuses on layout usability and band selection.
+
+- Added a band selector in the remote panel that sends the verified Elecraft band tap macros through the server.
+- Tightened compact mode so the browser can shrink to a much narrower mobile-style width.
+- Reduced the RF output emphasis and compressed the control groups in compact mode.
+- Kept the ATU, PF1/PF2, frequency, band-label, fan, and HTTPS trust changes from 0.6.0.
+
 ## 0.6.0 - 2026-07-27
 
 This release tightens protocol fidelity and fills out the remote panel.

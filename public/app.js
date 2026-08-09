@@ -5,6 +5,7 @@ let needsSetup = false;
 const $ = id => document.getElementById(id);
 const show = (id, visible) => $(id).hidden = !visible;
 const bandLabels = { 0: '160 m', 1: '80 m', 2: '60 m', 3: '40 m', 4: '30 m', 5: '20 m', 6: '17 m', 7: '15 m', 8: '12 m', 9: '10 m', 10: '6 m' };
+const bandButtons = ['07', '15', '23', '06', '14', '22', '05', '13', '21', '04', '12'];
 const formatBand = value => Number.isFinite(Number(value)) ? (bandLabels[Number(value)] || `${value} m`) : '—';
 async function request(url, options = {}) {
   const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(csrf ? { 'X-CSRF-Token': csrf } : {}) };
@@ -15,6 +16,16 @@ async function request(url, options = {}) {
 }
 function toast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2400); }
 function value(id, text) { $(id).textContent = text ?? '—'; }
+function populateBandSelect() {
+  const select = $('band-select');
+  if (select.options.length) return;
+  for (let i = 0; i <= 10; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = bandLabels[i] || `${i} m`;
+    select.append(option);
+  }
+}
 function setFanSeverity(level) {
   const fan = $('fan');
   fan.classList.remove('fan-warn', 'fan-hot', 'fan-critical');
@@ -23,7 +34,7 @@ function setFanSeverity(level) {
   else if (level >= 5) fan.classList.add('fan-critical');
 }
 function render(s) {
-  value('power', s.power); value('mode', s.mode); value('band', s.bandLabel || formatBand(s.band)); value('frequency', s.frequencyHz ? `${(s.frequencyHz / 1e6).toFixed(6)} MHz` : '—');
+  value('power', s.power); value('mode', s.mode); value('frequency', s.frequencyHz ? `${(s.frequencyHz / 1e6).toFixed(6)} MHz` : '—');
   $('operate-button').classList.toggle('active-oper', s.mode === 'OPER');
   $('standby-button').classList.toggle('active-standby', s.mode === 'STBY');
   $('atu-inline-button').classList.toggle('active-oper', s.atuInline === true);
@@ -35,6 +46,7 @@ function render(s) {
   $('connection').textContent = s.connected ? `${s.connectionMode.toUpperCase()} ONLINE` : 'OFFLINE'; $('connection').classList.toggle('online', s.connected);
   value('updated', s.lastSeen ? `Updated ${new Date(s.lastSeen).toLocaleTimeString()}` : 'Waiting for telemetry');
   if (s.antenna) $('antenna-select').value = s.antenna;
+  if (Number.isInteger(s.band) && document.activeElement !== $('band-select')) $('band-select').value = s.band;
   if (Number.isInteger(s.fanMinimum) && document.activeElement !== $('fan-minimum-slider')) { $('fan-minimum-slider').value = s.fanMinimum; updateFanSliderLabel(s.fanMinimum); }
 }
 async function refreshState() { try { render(await request('/api/state')); } catch (e) { if (/Authentication/.test(e.message)) location.reload(); } }
@@ -61,7 +73,9 @@ $('auth-form').addEventListener('submit', async event => {
 });
 document.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', async () => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: button.dataset.action }) }); toast(`${button.textContent} command sent`); } catch (e) { toast(e.message); } }));
 document.querySelectorAll('[data-action-pf]').forEach(button => button.addEventListener('click', async () => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: button.dataset.actionPf }) }); toast(`${button.textContent} command sent`); } catch (e) { toast(e.message); } }));
+populateBandSelect();
 for (let i = 1; i <= 32; i++) { const option = document.createElement('option'); option.value = i; option.textContent = `ANT ${i}`; $('antenna-select').append(option); }
+$('band-select').addEventListener('change', async event => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: 'band', value: Number(event.target.value) }) }); } catch (e) { toast(e.message); } });
 $('antenna-select').addEventListener('change', async event => { try { await request('/api/control', { method: 'POST', body: JSON.stringify({ action: 'antenna', value: Number(event.target.value) }) }); } catch (e) { toast(e.message); } });
 function updateFanSliderLabel(value) { const labels = ['0 — Automatic / off', '1 — Minimum', '2', '3', '4', '5 — Maximum']; $('fan-slider-value').textContent = labels[Number(value)] || value; }
 $('fan-minimum-slider').addEventListener('input', event => updateFanSliderLabel(event.target.value));
