@@ -17,14 +17,23 @@
   <main id="app" hidden>
     <header>
       <div class="wordmark"><span>ELECRAFT KPA</span>1500 <em>by worldwidedx.com</em></div>
-      <div class="header-actions"><span id="connection" class="pill">Connecting</span><button id="compact" class="ghost">Compact</button><button id="logout" class="ghost">Sign out</button></div>
+      <div class="header-actions">
+        <div class="view-tabs">
+          <button id="view-operate" class="tab-button active" type="button">Operate</button>
+          <button id="view-config" class="tab-button" type="button">Amp Config</button>
+        </div>
+        <span id="connection" class="pill">Connecting</span><button id="compact" class="ghost">Compact</button><button id="logout" class="ghost">Sign out</button>
+      </div>
     </header>
+    <section class="banner-strip">
+      <small>KPA1500 BANNER</small><strong id="banner">—</strong>
+    </section>
     <section class="status-strip">
       <div><small>AMPLIFIER</small><strong id="power">—</strong></div><div><small>MODE</small><strong id="mode">—</strong></div>
       <label class="band-control"><small>BAND</small><select id="band-select" aria-label="Band"></select></label><div><small>FREQUENCY</small><strong id="frequency">—</strong></div>
       <div><small>ANTENNA</small><strong id="antenna">—</strong></div><div><small>FAULT</small><strong id="fault">—</strong></div>
     </section>
-    <section class="dashboard">
+    <section id="operate-view" class="dashboard">
       <article class="panel meters">
         <div class="section-title"><h2>RF output</h2><span id="updated">Waiting for telemetry</span></div>
         <div class="power-readout"><strong id="watts">0</strong><span>W</span></div>
@@ -42,15 +51,85 @@
         <label class="select-label">Antenna<select id="antenna-select"></select></label>
         <label class="select-label fan-slider-label"><span>Minimum fan speed</span><output id="fan-slider-value" for="fan-minimum-slider">0 — Automatic / off</output><input id="fan-minimum-slider" type="range" min="0" max="5" step="1" value="0"><span class="slider-scale"><b>0</b><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b></span></label>
         <div class="button-grid"><button id="wake">Wake amplifier</button><button data-action="powerOff" class="danger">Power off</button></div>
+        <div class="button-grid"><button id="fault-clear" data-action="faultClear" class="danger">Clear fault</button></div>
       </article>
       <article class="panel health">
         <div class="section-title"><h2>Amplifier health</h2><span id="firmware">Firmware —</span></div>
         <div class="health-grid">
           <div><small>TEMPERATURE</small><strong id="temperature">—</strong></div><div><small>FAN SPEED</small><strong id="fan">—</strong><span id="fan-minimum">Minimum —</span></div>
           <div><small>PA VOLTAGE</small><strong id="voltage">—</strong></div><div><small>PA CURRENT</small><strong id="current">—</strong></div>
+          <div><small>FAULT CODE</small><strong id="fault-health">—</strong></div><div><small>FAULT DETAIL</small><strong id="fault-details">—</strong></div>
+        </div>
+        <div class="diagnostic-grid">
+          <div><small>CURRENT ATU</small><strong id="current-atu">—</strong></div>
+          <div><small>SWR BYPASS</small><strong id="swr-bypass">—</strong></div>
+          <div><small>BYPASS POWER LIMIT</small><strong id="power-limit-bypass">—</strong></div>
+          <div><small>OVERDRIVE REASON</small><strong id="overdrive-reason">—</strong></div>
+          <div><small>ATTENUATOR REASON</small><strong id="attenuator-reason">—</strong></div>
+          <div class="diagnostic-wide"><small>STORED ATU SETTINGS</small><strong id="stored-atu">—</strong></div>
         </div>
       </article>
       <article class="panel activity"><div class="section-title"><h2>Activity</h2><button id="refresh-log" class="ghost">Refresh</button></div><ol id="events"></ol></article>
+    </section>
+    <section id="config-view" class="config-shell" hidden>
+      <article class="panel config-panel">
+        <div class="section-title"><h2>Amp Config</h2><span id="config-band">Current band —</span></div>
+        <p class="config-copy">Current-band amplifier settings only. Network, transport, and remote port settings stay in Host Setup.</p>
+        <div class="config-grid">
+          <section class="config-group settings-form">
+            <h3>ATU behavior</h3>
+            <div class="toggle-row full-row atu-toggle">
+              <input id="cfg-atu-retune" type="checkbox">
+              <label for="cfg-atu-retune">ATU HiSWR retune</label>
+            </div>
+            <label>ATU settings per bin<input id="cfg-atu-bins" type="number" min="1" max="32" step="1"></label>
+            <label>ATU retune threshold<input id="cfg-atu-retune-threshold" type="number" min="1.0" max="99.9" step="0.1"></label>
+            <label>SWR bypass threshold<input id="cfg-swr-bypass" type="number" min="1.0" max="99.9" step="0.1"></label>
+            <label>SWR stop threshold<input id="cfg-swr-stop" type="number" min="1.0" max="99.9" step="0.1"></label>
+            <label>SWR no-match threshold<input id="cfg-swr-nomatch" type="number" min="1.0" max="99.9" step="0.1"></label>
+          </section>
+          <section class="config-group settings-form">
+            <h3>Amplifier behavior</h3>
+            <label>ALC threshold<input id="cfg-alc" type="number" min="0" max="255" step="1"></label>
+            <label>Band change standby<select id="cfg-band-change"><option value="0">Stay in OPER</option><option value="1">Switch to STBY</option></select></label>
+            <label>Attenuator release (ms)<input id="cfg-atten-release" type="number" min="1400" max="5000" step="1"></label>
+            <label>Fan dwell (seconds)<input id="cfg-fan-dwell" type="number" min="3" max="100" step="1"></label>
+          </section>
+          <section class="config-group">
+            <h3>Antenna routing</h3>
+            <p class="config-copy">This table edits the currently active band. Use the Operate view band selector to move to another band before changing its routing.</p>
+            <div class="routing-band" id="config-band-routing">Band —</div>
+            <label>Preferred antenna for current band<select id="cfg-antenna-preferred"></select></label>
+            <div class="routing-grid">
+              <div class="routing-head">Antenna</div><div class="routing-head">State</div>
+              <div id="cfg-antenna-matrix" class="routing-matrix"></div>
+            </div>
+          </section>
+          <section class="config-group atu-manual">
+            <h3>ATU relays</h3>
+            <p class="config-copy">Manual relay control for the tuner. These controls are for expert use and show the effective capacitance and inductance in operator-friendly units.</p>
+            <div class="atu-relay-section">
+              <div class="atu-relay-title">
+                <strong>Capacitors</strong>
+                <span id="atu-cap-total">0 pF</span>
+              </div>
+              <div id="atu-capacitor-grid" class="relay-grid"></div>
+            </div>
+            <div class="atu-relay-section">
+              <div class="atu-relay-title">
+                <strong>Inductors</strong>
+                <span id="atu-ind-total">0 nH</span>
+              </div>
+              <div id="atu-inductor-grid" class="relay-grid"></div>
+            </div>
+          </section>
+          <details class="config-group band-overview">
+            <summary>Band overview</summary>
+            <p class="config-copy">Read-only summary of preferred antenna and antenna-enable defaults for all bands.</p>
+            <div class="overview-grid" id="band-overview"></div>
+          </details>
+        </div>
+      </article>
     </section>
   </main>
   <div id="toast" role="status"></div><script src="/app.js"></script>

@@ -32,7 +32,7 @@ The protocol implementation is based on Elecraft's official [KPA1500 manuals and
 Build the ARM64 Debian package with `bash packaging/build-deb.sh`. Install the resulting file on Raspberry Pi OS with:
 
 ```bash
-sudo apt install ./kpa1500-web_0.6.1_arm64.deb
+sudo apt install ./kpa1500-web_0.7.0_arm64.deb
 ```
 
 The package starts a system service, installs a **KPA1500 Web Remote** application-menu launcher, and opens the graphical first-run account and Host Setup workflow. Station configuration and password data live in `/var/lib/kpa1500-web` and are never included in the package.

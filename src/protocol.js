@@ -22,6 +22,11 @@ function normalizeCommand(command) {
 }
 
 function commandKey(frame) {
+  if (frame.startsWith('^BT')) return 'BT';
+  if (frame.startsWith('^CR')) return 'CR';
+  if (frame.startsWith('^LR')) return 'LR';
+  if (frame.startsWith('^AEAB')) return 'AE';
+  if (frame.startsWith('^APAB')) return 'AP';
   if (/^\^AM[IB]/.test(frame)) return 'AM';
   const match = /^\^(VM[235]|[A-Z]{1,3})/.exec(frame);
   return match ? match[1] : '';
@@ -52,6 +57,10 @@ function payload(frame, mnemonic) {
 function numberValue(value, scale = 1) {
   const n = Number(value);
   return Number.isFinite(n) ? n / scale : null;
+}
+
+function textValue(value) {
+  return String(value || '').replace(/\r/g, '').replace(/\\n/g, '\n').trim();
 }
 
 function applyFrame(state, frame) {
@@ -89,6 +98,67 @@ function applyFrame(state, frame) {
     case 'PC': next.currentA = numberValue(value); break;
     case 'VMH': next.voltageV = numberValue(value, 10); break;
     case 'FL': next.faultCode = value; break;
+    case 'SF': next.faultDetails = textValue(value); break;
+    case 'AD': next.lastAttenuatorReason = textValue(value); break;
+    case 'OC':
+    case 'AS': next.overdriveReason = value; break;
+    case 'DA': next.currentAtuSetting = textValue(value); break;
+    case 'DF': next.storedAtuSettings = textValue(value); break;
+    case 'AB': next.atuSettingsPerBin = Number(value); break;
+    case 'HS': next.atuHiSwrRetune = value === '1'; break;
+    case 'STA': next.atuRetuneThreshold = numberValue(value, 10); break;
+    case 'SB': next.swrBypass = numberValue(value, 10); break;
+    case 'STB': next.swrBypassThreshold = numberValue(value, 10); break;
+    case 'STS': next.swrStopThreshold = numberValue(value, 10); break;
+    case 'STN': next.swrNoMatchThreshold = numberValue(value, 10); break;
+    case 'AL': next.alcThreshold = Number(value); break;
+    case 'CR': next.atuCapacitorsMask = value.toUpperCase(); break;
+    case 'LR': next.atuInductorsMask = value.toUpperCase(); break;
+    case 'AE': {
+      if (/^AB[012]{11}$/i.test(value)) {
+        next.antennaEnableAllBands = value.slice(2).split('');
+      } else {
+        const matrix = /^(\d{2})ALL([12D]{32})$/i.exec(value);
+        const cell = /^(\d{2})(\d{2})([12D])$/i.exec(value);
+        const simple = /^[012]$/.exec(value);
+        if (simple) {
+          next.antennaEnable = Number(simple[0]);
+        } else if (matrix) {
+          next.antennaEnableBand = Number(matrix[1]);
+          next.antennaEnableTable = matrix[2].split('');
+        } else if (cell) {
+          next.antennaEnableBand = Number(cell[1]);
+          next.antennaEnableTable ||= Array(32).fill('D');
+          next.antennaEnableTable[Number(cell[2]) - 1] = cell[3];
+        }
+      }
+      break;
+    }
+    case 'AP': {
+      if (/^AB[0-9]{11}$/i.test(value)) {
+        next.antennaPreferredAllBands = value.slice(2).split('').map(Number);
+      } else {
+        const band = /^(\d{2})(\d{1,2})$/.exec(value);
+        const simple = /^[0-2]$/.exec(value);
+        if (simple) {
+          next.antennaPreferred = Number(simple[0]);
+        } else if (band) {
+          next.antennaPreferredBand = Number(band[1]);
+          next.antennaPreferred = Number(band[2]);
+        }
+      }
+      break;
+    }
+    case 'AR': next.attenuatorReleaseMs = Number(value); break;
+    case 'BC': next.bandChangeStandby = value === '1'; break;
+    case 'DW': next.fanDwellSeconds = Number(value); break;
+    case 'TB': {
+      const match = /^(\d{3})\s+(\d+)W$/i.exec(value);
+      if (match) next.powerLimitBypass = { swr: numberValue(match[1], 10), watts: Number(match[2]) };
+      else next.powerLimitBypass = textValue(value);
+      break;
+    }
+    case 'BT': next.bannerText = textValue(value); break;
     case 'RV': next.firmware = value; break;
     case 'SN': next.serialNumber = value; break;
     case 'MA': next.macAddress = value.toUpperCase(); break;

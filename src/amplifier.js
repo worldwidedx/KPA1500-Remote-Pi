@@ -10,7 +10,14 @@ const initialState = () => ({
   connected: false, power: 'ON', mode: 'STBY', antenna: 1, band: 20,
   frequencyHz: 14200000, forwardWatts: 0, reflectedWatts: 0, inputWatts: 0,
   swr: 1, temperatureC: 28, fanSpeed: 0, fanMinimum: 0, atuInline: false, voltageV: 50, currentA: 0,
-  faultCode: '000', firmware: '', serialNumber: '', lastSeen: null
+  faultCode: '000', faultDetails: '', firmware: '', serialNumber: '', lastSeen: null,
+  bannerText: '', currentAtuSetting: '', storedAtuSettings: '', swrBypass: null, powerLimitBypass: null,
+  overdriveReason: '', lastAttenuatorReason: '',
+  atuSettingsPerBin: null, atuHiSwrRetune: null, atuRetuneThreshold: null, swrBypassThreshold: null,
+  swrStopThreshold: null, swrNoMatchThreshold: null, alcThreshold: null, antennaEnable: null,
+  antennaPreferred: null, attenuatorReleaseMs: null, bandChangeStandby: null, fanDwellSeconds: null,
+  antennaEnableBand: null, antennaEnableTable: null, antennaPreferredBand: null, antennaPreferredAllBands: null,
+  antennaEnableAllBands: null, atuCapacitorsMask: null, atuInductorsMask: null
 });
 
 class Amplifier extends EventEmitter {
@@ -52,7 +59,31 @@ class Amplifier extends EventEmitter {
   }
 
   startDemo() {
-    this.setState({ connected: true, firmware: 'DEMO 3.03', serialNumber: 'SIMULATOR' });
+    this.setState({
+      connected: true,
+      firmware: 'DEMO 3.03',
+      serialNumber: 'SIMULATOR',
+      bannerText: 'DEMO KPA1500',
+      atuSettingsPerBin: 8,
+      atuHiSwrRetune: true,
+      atuRetuneThreshold: 1.4,
+      swrBypassThreshold: 1.2,
+      swrStopThreshold: 1.1,
+      swrNoMatchThreshold: 3.0,
+      alcThreshold: 40,
+      antennaEnable: 0,
+      antennaEnableBand: 5,
+      antennaEnableTable: Array(32).fill('D').map((value, index) => (index < 2 ? String(index + 1) : value)),
+      antennaEnableAllBands: Array(11).fill('0'),
+      antennaPreferredBand: 5,
+      antennaPreferred: 0,
+      antennaPreferredAllBands: Array(11).fill(0),
+      atuCapacitorsMask: '00',
+      atuInductorsMask: '00',
+      attenuatorReleaseMs: 2000,
+      bandChangeStandby: false,
+      fanDwellSeconds: 10
+    });
     let phase = 0;
     this.pollTimers.push(setInterval(() => {
       phase += 0.18;
@@ -146,12 +177,53 @@ class Amplifier extends EventEmitter {
     else if (command.startsWith('^AM') || command.startsWith('^AT') || command.startsWith('^AI')) this.setState({ atuInline: !command.includes('B') && !command.includes('0') });
     else if (command.startsWith('^FC')) this.setState({ fanMinimum: Number(command.slice(3, -1)), fanSpeed: Math.max(this.state.fanSpeed || 0, Number(command.slice(3, -1))) });
     else if (command === '^FT;') this.setState({ mode: 'OPER', swr: 1.08 });
+    else if (command === '^FLC;') this.setState({ faultCode: '000', faultDetails: '' });
+    else if (command.startsWith('^AB')) this.setState({ atuSettingsPerBin: Number(command.slice(3, -1)) || this.state.atuSettingsPerBin });
+    else if (command.startsWith('^HS')) this.setState({ atuHiSwrRetune: command.includes('1') });
+    else if (command.startsWith('^STA')) this.setState({ atuRetuneThreshold: Number(command.slice(4, -1)) / 10 });
+    else if (command.startsWith('^STB')) this.setState({ swrBypassThreshold: Number(command.slice(4, -1)) / 10 });
+    else if (command.startsWith('^STS')) this.setState({ swrStopThreshold: Number(command.slice(4, -1)) / 10 });
+    else if (command.startsWith('^STN')) this.setState({ swrNoMatchThreshold: Number(command.slice(4, -1)) / 10 });
+    else if (command.startsWith('^AL')) this.setState({ alcThreshold: Number(command.slice(3, -1)) });
+    else if (command.startsWith('^CR')) this.setState({ atuCapacitorsMask: command.slice(3, -1).toUpperCase() });
+    else if (command.startsWith('^LR')) this.setState({ atuInductorsMask: command.slice(3, -1).toUpperCase() });
+    else if (command.startsWith('^AE')) {
+      const body = command.slice(3, -1);
+      if (/^[012]$/i.test(body)) this.setState({ antennaEnable: Number(body) });
+      if (/^\d{2}\d{2}[12D]$/i.test(body)) {
+        this.setState({
+          antennaEnableBand: Number(body.slice(0, 2)),
+          antennaEnableTable: (() => {
+            const table = Array(32).fill('D');
+            table[Number(body.slice(2, 4)) - 1] = body.slice(4, 5).toUpperCase();
+            return table;
+          })()
+        });
+      } else if (/^\d{2}ALL[12D]{32}$/i.test(body)) {
+        this.setState({ antennaEnableBand: Number(body.slice(0, 2)), antennaEnableTable: body.slice(5).toUpperCase().split('') });
+      } else if (/^AB[012]{11}$/i.test(body)) {
+        this.setState({ antennaEnableAllBands: body.slice(2).split('') });
+      }
+    }
+    else if (command.startsWith('^AP')) {
+      const body = command.slice(3, -1);
+      if (/^[0-2]$/i.test(body)) this.setState({ antennaPreferred: Number(body) });
+      else if (/^\d{2}\d{1,2}$/i.test(body)) this.setState({ antennaPreferredBand: Number(body.slice(0, 2)), antennaPreferred: Number(body.slice(2)) });
+      else if (/^AB[0-9]{11}$/i.test(body)) this.setState({ antennaPreferredAllBands: body.slice(2).split('').map(Number) });
+    }
+    else if (command.startsWith('^AR')) this.setState({ attenuatorReleaseMs: Number(command.slice(3, -1)) });
+    else if (command.startsWith('^BC')) this.setState({ bandChangeStandby: command.includes('1') });
+    else if (command.startsWith('^DW')) this.setState({ fanDwellSeconds: Number(command.slice(3, -1)) });
     this.emit('command', command);
     return command;
   }
 
-  queryFast() { for (const command of ['^WS;', '^PWR;', '^PWI;', '^TM;', '^VI;', '^FS;', '^FL;', '^OS;']) this.safeSend(command); }
-  querySlow() { for (const command of ['^ON;', '^AN;', '^BN;', '^FR;', '^RV;', '^SN;', '^MA;', '^WL;', '^AM;', '^FC;']) this.safeSend(command); }
+  queryFast() { for (const command of ['^WS;', '^PWR;', '^PWI;', '^TM;', '^VI;', '^FS;', '^FL;', '^OC;', '^OS;']) this.safeSend(command); }
+  querySlow() {
+    const freqKhz = Math.max(1, Math.round((this.state.frequencyHz || 14200000) / 1000));
+    const band = String(Number.isInteger(this.state.band) ? this.state.band : 5).padStart(2, '0');
+    for (const command of ['^ON;', '^AN;', '^BN;', '^FR;', '^RV;', '^SN;', '^MA;', '^WL;', '^AM;', '^FC;', '^BT;', '^DA;', `^DF${freqKhz};`, '^SB;', '^TB;', '^AD;', '^SF;', '^AB;', '^HS;', '^STA;', '^STB;', '^STS;', '^STN;', '^AL;', `^AE${band}ALL;`, `^AEAB;`, `^AP${band};`, '^APAB;', '^CR;', '^LR;', '^AR;', '^BC;', '^DW;']) this.safeSend(command);
+  }
   safeSend(command) { try { this.send(command); } catch {} }
 }
 

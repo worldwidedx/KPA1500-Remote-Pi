@@ -1,5 +1,15 @@
 # Release Notes
 
+## 0.7.0 - 2026-08-10
+
+This release expands the browser remote into a more complete operating and configuration surface while keeping the host network settings private to Host Setup.
+
+- Added a dedicated Operate/Config split in the remote client so the dashboard stays usable while the configuration surface grows.
+- Expanded the remote Health section with live banner text, fault detail and clear, current ATU state, stored ATU settings, SWR bypass, bypass power limit, overdrive reason, and attenuator reason.
+- Added an Amp Config view for safe current-band amplifier settings including ATU HiSWR retune, ATU memory depth, ATU retune/bypass/stop/no-match thresholds, ALC threshold, band-change standby, attenuator release, fan dwell, and current-band antenna defaults.
+- Added current-band ATU relay controls with operator-friendly pF and nH labeling.
+- Tightened the compact view so the browser can still be used on a mobile-sized screen without losing the important controls.
+
 ## 0.6.1 - 2026-08-09
 
 This release focuses on layout usability and band selection.

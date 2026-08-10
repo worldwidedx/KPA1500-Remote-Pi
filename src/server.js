@@ -41,7 +41,55 @@ const clientIp = req => req.socket.remoteAddress || 'unknown';
 function failLogin(req) { const old = attempts.get(clientIp(req)) || { count: 0, until: 0 }; old.count++; old.until = Date.now() + Math.min(300000, old.count * old.count * 1000); attempts.set(clientIp(req), old); }
 function setCookie(res, name, value, maxAge) { res.setHeader('Set-Cookie', `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`); }
 const bandButtons = ['07', '15', '23', '06', '14', '22', '05', '13', '21', '04', '12'];
-const controls = { operate: '^OS1;', standby: '^OS0;', powerOn: '^ON1;', powerOff: '^ON0;', tune: '^FT;', cancelTune: '^FE;', atuInline: '^AMI;', atuBypass: '^AMB;', pf1: '^BPH18;', pf2: '^BPH01;' };
+const controls = { operate: '^OS1;', standby: '^OS0;', powerOn: '^ON1;', powerOff: '^ON0;', tune: '^FT;', cancelTune: '^FE;', atuInline: '^AMI;', atuBypass: '^AMB;', faultClear: '^FLC;', pf1: '^BPH18;', pf2: '^BPH01;' };
+const configCommands = {
+  atuSettingsPerBin: value => `^AB${formatInt(value, 1, 32)};`,
+  atuHiSwrRetune: value => `^HS${formatBool(value)};`,
+  atuRetuneThreshold: value => `^STA${formatTenths(value)};`,
+  swrBypassThreshold: value => `^STB${formatTenths(value)};`,
+  swrStopThreshold: value => `^STS${formatTenths(value)};`,
+  swrNoMatchThreshold: value => `^STN${formatTenths(value)};`,
+  alcThreshold: value => `^AL${formatInt(value, 0, 255).padStart(3, '0')};`,
+  antennaEnableCell: ({ band, antenna, connector }) => `^AE${formatBandNumber(band)}${formatAntennaNumber(antenna)}${formatChoice(connector, ['D', '1', '2'])};`,
+  antennaPreferredBand: ({ band, antenna }) => `^AP${formatBandNumber(band)}${formatAntennaNumber(antenna, true)};`,
+  atuCapacitors: value => `^CR${formatHexByte(value)};`,
+  atuInductors: value => `^LR${formatHexByte(value)};`,
+  attenuatorReleaseMs: value => `^AR${formatInt(value, 1400, 5000).padStart(4, '0')};`,
+  bandChangeStandby: value => `^BC${formatBool(value)};`,
+  fanDwellSeconds: value => `^DW${formatInt(value, 3, 100).padStart(3, '0')};`
+};
+function formatBool(value) { return Number(value) ? '1' : '0'; }
+function formatBandNumber(value) {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0 || n > 10) throw new Error('Band must be between 0 and 10');
+  return String(n).padStart(2, '0');
+}
+function formatAntennaNumber(value, allowZero = false) {
+  const n = Number(value);
+  const min = allowZero ? 0 : 1;
+  if (!Number.isInteger(n) || n < min || n > 32) throw new Error(`Antenna must be between ${min} and 32`);
+  return String(n).padStart(2, '0');
+}
+function formatInt(value, min, max) {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < min || n > max) throw new Error(`Value must be between ${min} and ${max}`);
+  return String(n);
+}
+function formatChoice(value, allowed) {
+  const n = String(value);
+  if (!allowed.includes(n)) throw new Error(`Value must be one of ${allowed.join(', ')}`);
+  return n;
+}
+function formatHexByte(value) {
+  const raw = typeof value === 'string' ? value.trim() : String(value ?? '');
+  if (!/^[0-9a-f]{1,2}$/i.test(raw)) throw new Error('Value must be a 1- or 2-digit hexadecimal mask');
+  return raw.toUpperCase().padStart(2, '0');
+}
+function formatTenths(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 1 || n > 99.9) throw new Error('Value must be between 1.0 and 99.9');
+  return String(Math.round(n * 10)).padStart(3, '0');
+}
 
 async function remoteApi(req, res, pathname) {
   if (pathname === '/api/login' && req.method === 'POST') {
@@ -58,6 +106,18 @@ async function remoteApi(req, res, pathname) {
   if (pathname === '/api/state' && req.method === 'GET') return json(res, 200, { ...amp.state, connectionMode: config.amplifier.mode });
   if (pathname === '/api/events' && req.method === 'GET') return json(res, 200, events.slice(0, 80));
   if (pathname === '/api/control' && req.method === 'POST') { const data = await body(req); let command = controls[data.action]; if (data.action === 'band' && Number.isInteger(data.value) && data.value >= 0 && data.value <= 10) command = `^BPT${bandButtons[data.value]};`; if (data.action === 'antenna' && Number.isInteger(data.value) && data.value >= 1 && data.value <= 32) command = `^AN${data.value};`; if (data.action === 'fanMinimum' && Number.isInteger(data.value) && data.value >= 0 && data.value <= 5) command = `^FC${data.value};`; if (!command) return json(res, 400, { error: 'Unsupported control' }); try { amp.send(command); return json(res, 202, { ok: true }); } catch (error) { return json(res, 503, { error: error.message }); } }
+  if (pathname === '/api/config' && req.method === 'POST') {
+    const data = await body(req);
+    const build = configCommands[data.setting];
+    if (!build) return json(res, 400, { error: 'Unsupported configuration setting' });
+    try {
+      const command = build(data.value);
+      amp.send(command);
+      return json(res, 202, { ok: true });
+    } catch (error) {
+      return json(res, 400, { error: error.message });
+    }
+  }
   if (pathname === '/api/wake' && req.method === 'POST') { const mac = String(config.amplifier.macAddress || '').replace(/[^0-9a-f]/gi, ''); if (mac.length !== 12) return json(res, 400, { error: 'Host Setup has not captured a valid amplifier MAC' }); const macBytes = Buffer.from(mac, 'hex'), packet = Buffer.concat([Buffer.alloc(6, 0xff), ...Array(16).fill(macBytes)]), parts = String(config.amplifier.host).split('.'), broadcast = parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.255` : '255.255.255.255'; const socket = dgram.createSocket('udp4'); socket.bind(() => { socket.setBroadcast(true); socket.send(packet, 9, broadcast, () => socket.close()); }); log('control', `Wake requested by ${user.username}`); return json(res, 202, { ok: true }); }
   return json(res, 404, { error: 'Not found' });
 }
