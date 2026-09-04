@@ -16,6 +16,14 @@ Configuration and password hashes are stored with mode `0600` under `data/`. Pas
 
 For access across the internet, put the service behind an HTTPS reverse proxy or use a VPN such as WireGuard/Tailscale. Do not forward an unencrypted control port directly from the public internet.
 
+## Initial Setup
+
+In Host Setup, set **Remote Client URL** to the exact address people will enter in their browser to use the remote. Set this before generating the CA certificate, because the server certificate is created for this name or address. For local-network use, enter the Raspberry Pi's LAN address or local DNS name, including the port when it is not the default. If you choose to access the remote from outside the LAN, enter the public IP address or public DNS name and its external port. Use this same URL on phones, tablets, and desktop browsers.
+
+## Use the remote from a Windows or desktop computer
+
+Export the public CA certificate (`.crt`) from Host Setup and transfer it to each desktop computer that will use the browser remote. On Windows, double-click the `.crt` file, select **Install Certificate**, choose **Current User** (or **Local Machine** for every user), select **Place all certificates in the following store**, then choose **Trusted Root Certification Authorities**. Close and reopen the browser before visiting the Remote Client URL. Firefox may use its own certificate store, so import the `.crt` in Firefox's certificate settings if it still shows a warning. On macOS, add the `.crt` to Keychain Access and set it to **Always Trust**. On Linux, import it through the distribution or browser certificate settings.
+
 ## Use the remote from a phone or tablet
 
 The browser remote uses HTTPS. Before a phone or tablet can open it without a certificate warning, install the **public CA certificate** from the Raspberry Pi Host Setup app. This is a one-time step for each device.
